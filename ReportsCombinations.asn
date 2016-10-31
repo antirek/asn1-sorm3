@@ -1,0 +1,12 @@
+ReportsCombinations DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+EXPORTS CombinationReport;
+
+IMPORTS CallsRecords
+    FROM ReportsConnections;
+
+--- отчеты задач поисков по усечению отобранных данных
+CombinationReport ::= CallsRecords
+
+END

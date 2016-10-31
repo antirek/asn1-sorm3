@@ -1,0 +1,33 @@
+TasksCombination DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+EXPORTS CombinationTask;
+
+IMPORTS 
+	LogicalOperation, TaskID FROM Tasks
+	RequestedConnection FROM RequestedConnections
+	
+	RequestedIdentifier FROM RequestedIdentifiers
+	IPAddress FROM NetworkIdentifiers
+	FindRange FROM Sorm;
+
+--- задачи поисков по усечению отобранных данных
+CombinationTask ::=  ValidateCombinationFilter				--- задача на усечение выборки по критериям
+
+--- задача на усечение выборки по критериям
+ValidateCombinationFilter ::= SEQUENCE {
+  set-a	TaskID,								--- результат выполненной ранее задачи для обработки
+  set-b	TaskID,								--- результат выполненной ранее задачи для обработки
+
+  filter-set-action ENUMERATED {					--- действия с результатами выполненных ранее задач
+      intersect(0),							--- пересечение результатов
+      combine (1),							--- объединение результатов
+      difference (2)							--- вычитание результатов
+  },
+  criteria-a [0] CombinationCriteria OPTIONAL,				--- значение критерия для выполнения действия с результатами выполненных ранее задач
+  criteria-b [1] CombinationCriteria OPTIONAL				--- значение критерия для выполнения действия с результатами выполненных ранее задач
+}
+
+CombinationCriteria ::= RequestedIdentifier
+
+END

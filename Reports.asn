@@ -1,0 +1,79 @@
+Reports DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+EXPORTS reportMessage, 
+	Acknowledgement;
+
+IMPORTS TAGGED,
+	sorm-message-report 
+	FROM Classification
+	
+	Message, MessageID, DateAndTime 
+	FROM Sorm
+	
+	TaskID 
+	FROM Tasks
+	
+	DictionaryReport 
+	FROM Dictionaries
+
+	ConnectionsReport
+	FROM ReportsConnections
+
+	LocationReport 
+	FROM ReportsLocations
+
+	PaymentsReport
+	FROM ReportsPayments
+
+	CombinationReport
+	FROM ReportsCombinations
+
+	PresenseReport
+	FROM ReportsPresense
+
+	NonFormalizedReport	
+	FROM ReportsNonFormalized
+
+	AbonentsReport 
+	FROM ReportsAbonents;
+
+reportMessage TAGGED ::= {
+  OID { sorm-message-report }
+  DATA CHOICE {
+    report [0]                   Report,				--- тип сообщения "отчет"
+    ack [1]                      Acknowledgement			--- тип сообщения "подтверждение"
+  }
+}
+
+-- Блок данных сообщения типа "отчет"
+Report ::=  SEQUENCE {
+  request-id MessageID,							--- идентификатор запроса, запросивший отчёт
+  task-id TaskID,							--- идентификатор задачи, сгенерировавшей данный отчет
+  total-blocks-number INTEGER (1 .. 1000000000000),			--- общее количество блоков в отчете
+  block-number INTEGER (1 .. 1000000000000),				--- порядковый номер текущего блока
+  report-block ReportDataBlock						--- блок данных отчета
+}									
+
+-- Подтверждение приёма блока, передаётся с номером соощения соответствующему номеру сообщения блока отчёта
+Acknowledgement ::= SEQUENCE {
+  successful BOOLEAN,							--- признак успешного приёма блока
+  broken-record INTEGER (1 .. 100000) OPTIONAL,			--- номер записи в отчете, обработанной на ПУ с ошибкой
+  error-description UTF8String (SIZE(1..1024)) OPTIONAL			--- описание ошибки приёма блока в произвольной форме
+}
+
+ReportDataBlock ::= CHOICE {
+  dictionary [0]	DictionaryReport,				--- отчеты задач пополнения справочников (нормативно-справочная информация)
+  abonents [1]          AbonentsReport,					--- отчеты задач поисков по принадлежности абонентов
+  connections [2]       ConnectionsReport,				--- отчеты задач поисков по соединениям абонентов
+  locations [3]         LocationReport,                                 --- отчет задачи получения данных местоположения абонентов
+  payments [4]          PaymentsReport,				        --- отчеты задач поисков по совершенным платежам
+  combination [5]       CombinationReport,			        --- отчеты задач поисков по усечению отобранных данных
+  presense [6]          PresenseReport,			                --- отчеты задач по запросу наличия в ИС СОРМ информации
+  nonFormalized [7]     NonFormalizedReport			        --- отчеты задач по обработке неформализованных данных
+}
+
+
+
+
+END
